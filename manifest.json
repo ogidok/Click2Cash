@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Click2Cash",
+  "version": "1.0.0",
+  "description": "Convierte montos en páginas web a tu moneda local detectando país por IP y permitiendo configuración manual.",
+  "permissions": [
+    "activeTab"
+    
+  ],
+  "host_permissions": [
+    "https://ipapi.co/*",
+    "https://open.er-api.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Click2Cash - Configuración</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-width: 280px;
+      background: linear-gradient(120deg, #e3f0fd 0%, #f6f9ff 100%);
+      color: #223;
+    }
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(44,62,80,0.13);
+      margin: 20px 12px;
+      padding: 20px 16px;
+      max-width: 260px;
+    }
+    h1 {
+      font-size: 1.25em;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #1976d2;
+    }
+    h2 {
+      font-size: 1.05em;
+      margin: 14px 0 7px 0;
+      font-weight: 600;
+      color: #1976d2;
+    }
+    label {
+      font-weight: 500;
+      margin-top: 8px;
+      margin-bottom: 3px;
+      display: block;
+      color: #345;
+      letter-spacing: 0.01em;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #c2dbfb;
+      border-radius: 6px;
+      background: #f9fcff;
+      font-size: 1em;
+      transition: border 0.2s;
+      box-sizing: border-box;
+    }
+    select:focus, input:focus {
+      border-color: #1976d2;
+      outline: none;
+      background: #eaf4ff;
+    }
+    button {
+      width: 100%;
+      padding: 10px 0;
+      background: linear-gradient(90deg,#1976d2 60%,#42a5f5 100%);
+      color: white;
+      font-size: 1.05em;
+      border: none;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px #1976d244;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(90deg,#1976d2 80%,#42a5f5 100%);
+      box-shadow: 0 2px 8px #1976d244;
+    }
+    #result {
+      margin-top: 14px;
+      padding: 8px 0;
+      font-weight: bold;
+      color: #1b5e20;
+      text-align: center;
+      background: #e3f9e6;
+      border-radius: 6px;
+      min-height: 20px;
+      box-shadow: 0 1px 3px #1976d218;
+    }
+    @media (max-width: 340px) {
+      .container {
+        margin: 6px 2px;
+        padding: 12px 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Click2Cash</h1>
+    <h2>Moneda local</h2>
+    <label for="currency-select">Selecciona tu moneda preferida:</label>
+    <select id="currency-select"></select>
+
+    <h2>Conversión manual</h2>
+    <label for="manual-amount">Monto a convertir:</label>
+    <input type="number" id="manual-amount" placeholder="Ej: 100" min="0" step="any">
+
+    <label for="manual-from">De:</label>
+    <select id="manual-from"></select>
+
+    <label for="manual-to">A:</label>
+    <select id="manual-to"></select>
+
+    <button id="convert-btn">Convertir</button>
+    <div id="result"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
