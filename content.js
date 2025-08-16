@@ -1,5 +1,6 @@
 // content.js: Script de contenido para Click2Cash
 
+
 // Configuración inicial y variables globales
 let localCurrency = "USD"; // Moneda por defecto
 let exchangeRates = {};    // Objeto para guardar tasas de cambio
