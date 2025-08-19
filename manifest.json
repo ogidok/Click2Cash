@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "description": "Convierte montos en páginas web a tu moneda local detectando país por IP y permitiendo configuración manual.",
   "permissions": [
-    "activeTab"
     
   ],
   "host_permissions": [
