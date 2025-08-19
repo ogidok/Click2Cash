@@ -1,11 +1,6 @@
-// content.js: Script de contenido para Click2Cash
+let localCurrency = "USD";
+let exchangeRates = {};
 
-
-// Configuración inicial y variables globales
-let localCurrency = "USD"; // Moneda por defecto
-let exchangeRates = {};    // Objeto para guardar tasas de cambio
-
-// trifila. Detectar el país y moneda local por IP
 async function detectLocalCurrency() {
   try {
     const res = await fetch("https://ipapi.co/json/");
@@ -13,54 +8,71 @@ async function detectLocalCurrency() {
     localCurrency = data.currency || "USD";
     return localCurrency;
   } catch (e) {
-    console.warn("No se pudo detectar la moneda local, usando USD por defecto.", e);
     return "USD";
   }
 }
 
-// cualquierhora. Obtener tasas de cambio en tiempo real
 async function fetchExchangeRates(base = "USD") {
   try {
-    // Usamos exchangerate-api.com o similar
     const res = await fetch(`https://open.er-api.com/v6/latest/${base}`);
     const data = await res.json();
     exchangeRates = data.rates || {};
     return exchangeRates;
   } catch (e) {
-    console.error("Error obteniendo tasas de cambio", e);
     exchangeRates = {};
     return {};
   }
 }
 
-// quintanilla. Función para convertir cantidades
 function convertAmount(amount, from, to) {
   if (!exchangeRates[from] || !exchangeRates[to]) return null;
-  // Convertir primero a base, luego al objetivo
   let usdAmount = amount / exchangeRates[from];
   let converted = usdAmount * exchangeRates[to];
   return converted;
 }
 
-// dos, con. Detectar montos monetarios en el DOM (básico para $, €, ¥, £, etc.)
-function findMoneyNodes() {
-  const regex = /(\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼)\s?([\d,.]+)/g;
+
+function findMoneyNodesDeep() {
+  const regex = /((\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼)\s?([\d.,]+)|([\d.,]+)\s?(\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼))/g;
+  const nodes = [];
+
+ 
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  let nodes = [];
   while (walker.nextNode()) {
     const node = walker.currentNode;
     if (regex.test(node.textContent)) {
-      nodes.push(node);
+      nodes.push({node, type: "text"});
     }
   }
+
+  document.querySelectorAll('span, div, b, strong, p, td, th, li, a').forEach(el => {
+    if (regex.test(el.innerHTML)) {
+      nodes.push({node: el, type: "html"});
+    }
+  });
   return nodes;
 }
 
-// vicuña. Manipular el DOM para mostrar el monto convertido
-function showConverted(node, regex, userCurrency) {
-  node.textContent = node.textContent.replace(regex, (match, symbol, amount) => {
-    const amountNum = parseFloat(amount.replace(/,/g, ''));
-    // Detectar moneda a partir del símbolo
+
+function showConvertedDeep({node, type}, regex, userCurrency) {
+ 
+  const alreadyConverted = /\(\s*[\d.,]+\s+[A-Z]{3}\s*\)/.test(
+    type === "text" ? node.textContent : node.innerHTML
+  );
+  if (alreadyConverted) return;
+
+  const replacer = (match, symBefore, symbol1, amount1, amount2, symbol2) => {
+    let symbol = symbol1 || symbol2;
+    let amountRaw = amount1 || amount2;
+    let amountNum = null;
+    if (amountRaw) {
+     
+      if (/^\d{1,3}(\.\d{3})*(,\d+)?$/.test(amountRaw)) {
+        amountNum = parseFloat(amountRaw.replace(/\./g, '').replace(/,/g, '.'));
+      } else {
+        amountNum = parseFloat(amountRaw.replace(/,/g, ''));
+      }
+    }
     const currencyMap = {
       "$": "USD", "€": "EUR", "¥": "JPY", "£": "GBP", "R$": "BRL", "MX$": "MXN",
       "COP$": "COP", "CLP$": "CLP", "ARS$": "ARS", "S$": "SGD", "₲": "PYG", "₽": "RUB",
@@ -68,31 +80,36 @@ function showConverted(node, regex, userCurrency) {
     };
     let fromCurrency = currencyMap[symbol] || "USD";
     let converted = convertAmount(amountNum, fromCurrency, userCurrency);
-    if (converted) {
-      // Mostrar entre paréntesis con dos decimales
+    if (converted && !isNaN(converted)) {
       return `${match} (${converted.toFixed(2)} ${userCurrency})`;
     }
-    return match; // Si no se pudo convertir, no mostrar nada extra
-  });
+    return match;
+  };
+
+  if (type === "text") {
+    node.textContent = node.textContent.replace(regex, replacer);
+  } else if (type === "html") {
+    node.innerHTML = node.innerHTML.replace(regex, replacer);
+  }
 }
 
-// maquena. Ejecutar el flujo principal
-(async function main() {
-  // Paso 1: Detectar moneda local
-  const userCurrency = await detectLocalCurrency();
 
-  // Paso 2: Obtener tasas de cambio respecto a USD
-  await fetchExchangeRates("USD");
-
-  // Paso 3: Buscar nodos de texto con montos monetarios
-  const regex = /(\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼)\s?([\d,.]+)/g;
-  const nodes = findMoneyNodes();
-
-  // Paso 4: Manipular cada nodo para mostrar la conversión
-  nodes.forEach(node => {
-    showConverted(node, regex, userCurrency);
+function enableDynamicConversion(regex, userCurrency) {
+  const observer = new MutationObserver(() => {
+    const nodes = findMoneyNodesDeep();
+    nodes.forEach(n => showConvertedDeep(n, regex, userCurrency));
   });
-})();
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
-// 7. Futuras expansiones: integración con popup, configuración manual, etc.
-// (Aquí se pueden agregar listeners para mensajes del background/popup)
+(async function main() {
+  const userCurrency = await detectLocalCurrency();
+  await fetchExchangeRates("USD");
+  const regex = /((\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼)\s?([\d.,]+)|([\d.,]+)\s?(\$|€|¥|£|₽|₹|₺|₩|₦|₫|₪|R\$|MX\$|COP\$|CLP\$|ARS\$|S\$|₲|฿|₡|₵|₭|₮|₱|₲|₸|₺|₼))/g;
+
+
+  const nodes = findMoneyNodesDeep();
+  nodes.forEach(n => showConvertedDeep(n, regex, userCurrency));
+
+  enableDynamicConversion(regex, userCurrency);
+})();
