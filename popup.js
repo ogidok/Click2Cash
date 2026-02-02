@@ -1,4 +1,3 @@
-// popup.js: lógica para el popup de configuración y conversión manual de Click2Cash
 
 // Elementos del DOM
 const currencySelect = document.getElementById("currency-select");
@@ -82,4 +81,5 @@ convertBtn.addEventListener("click", convertManualAmount);
   // Cargar preferencia y seleccionar en el select
   const userCurrency = await loadUserCurrency();
   currencySelect.value = userCurrency;
+
 })();
