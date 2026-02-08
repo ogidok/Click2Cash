@@ -177,6 +177,27 @@
     return result.response || { ok: false };
   }
 
+  async function detectCurrencyFromActiveTab() {
+    const tab = await queryActiveTab();
+    if (!tab || !tab.id) {
+      return null;
+    }
+
+    try {
+      await ensureContentScript(tab.id);
+    } catch (error) {
+      return null;
+    }
+
+    const result = await sendMessage(tab.id, { type: "c2c-detect" });
+    if (result.error || !result.response) {
+      return null;
+    }
+
+    const currency = result.response.currency;
+    return currency ? String(currency).toUpperCase() : null;
+  }
+
   api.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || !message.type) {
       return;
@@ -185,7 +206,8 @@
     if (message.type === "c2c-get-state") {
       (async () => {
         const preferredCurrency = await getPreferredCurrency();
-        const detectedCurrency = await detectCurrency();
+        const pageCurrency = await detectCurrencyFromActiveTab();
+        const detectedCurrency = pageCurrency || (await detectCurrency());
         sendResponse({ preferredCurrency, detectedCurrency });
       })();
       return true;

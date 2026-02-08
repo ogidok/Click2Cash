@@ -190,9 +190,52 @@
 		return { ok: true };
 	}
 
+	function detectCurrencyOnPage() {
+		const counts = new Map();
+
+		function tallyFromText(text) {
+			if (!text || !quickPattern.test(text)) {
+				return;
+			}
+			pricePattern.lastIndex = 0;
+			let match;
+			while ((match = pricePattern.exec(text)) !== null) {
+				const symbol = match[1] || match[4];
+				if (!symbol) {
+					continue;
+				}
+				const currency = symbolToCurrency[symbol];
+				if (!currency) {
+					continue;
+				}
+				counts.set(currency, (counts.get(currency) || 0) + 1);
+			}
+		}
+
+		window.Click2CashDomScanner.scanTextNodes(document.body, (node) => {
+			tallyFromText(node.nodeValue || "");
+		});
+
+		window.Click2CashDomScanner.scanElements(document.body, (element) => {
+			tallyFromText(element.textContent || "");
+		});
+
+		let topCurrency = null;
+		let topCount = 0;
+		for (const [currency, count] of counts.entries()) {
+			if (count > topCount) {
+				topCurrency = currency;
+				topCount = count;
+			}
+		}
+
+		return topCurrency;
+	}
+
 	window.Click2Cash = {
 		__loaded: true,
-		convertPage
+		convertPage,
+		detectCurrencyOnPage
 	};
 
 	const api = typeof browser !== "undefined" ? browser : chrome;
@@ -201,6 +244,10 @@
 			if (message && message.type === "c2c-convert") {
 				const result = convertPage(message);
 				sendResponse(result);
+			}
+			if (message && message.type === "c2c-detect") {
+				const currency = detectCurrencyOnPage();
+				sendResponse({ currency });
 			}
 		});
 	}
