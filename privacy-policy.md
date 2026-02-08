@@ -29,4 +29,4 @@ Para cualquier consulta sobre privacidad, puedes ponerte en contacto mediante [c
 
 ---
 
-Última actualización: [Fecha]
+Última actualización: [08/02/2026]
