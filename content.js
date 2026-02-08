@@ -7,12 +7,16 @@
 		"€": "EUR",
 		"$": "USD",
 		"£": "GBP",
-		"¥": "JPY"
+		"¥": "JPY",
+		"￥": "JPY",
+		"円": "JPY"
 	};
 
-	const pricePattern = /([€$£¥])\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s?([€$£¥])/g;
+	const pricePattern = /(?:[A-Z]{2,3}\s?)?([€$£¥￥円])\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s?(?:[A-Z]{2,3}\s?)?([€$£¥￥円])/g;
+	const quickPattern = /[€$£¥￥円]\s*\d|\d\s*[€$£¥￥円]/;
 
 	function buildReplacement(text, targetCurrency, rates) {
+		pricePattern.lastIndex = 0;
 		const fragment = document.createDocumentFragment();
 		let lastIndex = 0;
 		let match;
@@ -72,9 +76,35 @@
 		return fragment;
 	}
 
+	function extractSingleMatch(text) {
+		pricePattern.lastIndex = 0;
+		let count = 0;
+		let match;
+		let data = null;
+
+		while ((match = pricePattern.exec(text)) !== null) {
+			const symbol = match[1] || match[4];
+			const amountText = match[2] || match[3];
+			if (!symbol || !amountText) {
+				continue;
+			}
+			count += 1;
+			if (count > 1) {
+				return null;
+			}
+			data = { symbol, amountText };
+		}
+
+		return data;
+	}
+
 	function processTextNode(node, targetCurrency, rates) {
 		const text = node.nodeValue;
 		if (!text || !text.trim()) {
+			return;
+		}
+
+		if (!quickPattern.test(text)) {
 			return;
 		}
 
@@ -92,6 +122,58 @@
 		node.parentNode.replaceChild(wrapper, node);
 	}
 
+	function processElementNode(element, targetCurrency, rates) {
+		if (element.hasAttribute("data-c2c-processed")) {
+			return;
+		}
+		if (element.querySelector("[data-c2c-added]")) {
+			return;
+		}
+		if (element.children.length > 6) {
+			return;
+		}
+
+		const text = element.textContent;
+		if (!text || text.length > 80) {
+			return;
+		}
+		if (!quickPattern.test(text)) {
+			return;
+		}
+
+		const match = extractSingleMatch(text);
+		if (!match) {
+			return;
+		}
+
+		const fromCurrency = symbolToCurrency[match.symbol];
+		if (!fromCurrency || fromCurrency === targetCurrency) {
+			return;
+		}
+
+		const amount = window.Click2CashCurrency.parseAmount(match.amountText);
+		if (amount === null) {
+			return;
+		}
+
+		const converted = window.Click2CashCurrency.convertAmount(
+			amount,
+			fromCurrency,
+			targetCurrency,
+			rates
+		);
+		if (converted === null) {
+			return;
+		}
+
+		const formatted = window.Click2CashCurrency.formatCurrency(converted, targetCurrency);
+		const annotation = document.createElement("span");
+		annotation.setAttribute("data-c2c-added", "true");
+		annotation.textContent = ` (${formatted})`;
+		element.appendChild(annotation);
+		element.setAttribute("data-c2c-processed", "true");
+	}
+
 	function convertPage({ targetCurrency, rates }) {
 		if (!targetCurrency || !rates || !rates.rates) {
 			return { ok: false, reason: "missing-data" };
@@ -99,6 +181,10 @@
 
 		window.Click2CashDomScanner.scanTextNodes(document.body, (node) => {
 			processTextNode(node, targetCurrency, rates);
+		});
+
+		window.Click2CashDomScanner.scanElements(document.body, (element) => {
+			processElementNode(element, targetCurrency, rates);
 		});
 
 		return { ok: true };

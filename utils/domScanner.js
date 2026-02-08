@@ -62,7 +62,38 @@
     }
   }
 
+  function scanElements(root, handler) {
+    const walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode(node) {
+          if (!node || EXCLUDED_TAGS.has(node.tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (hasFlaggedAncestor(node)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (!isVisible(node)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (!node.textContent || !node.textContent.trim()) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      },
+      false
+    );
+
+    let current;
+    while ((current = walker.nextNode())) {
+      handler(current);
+    }
+  }
+
   window.Click2CashDomScanner = {
-    scanTextNodes
+    scanTextNodes,
+    scanElements
   };
 })();

@@ -101,5 +101,6 @@
 		const state = await getState();
 		detectedLabel.textContent = `Detected: ${state.detectedCurrency || "Unknown"}`;
 		fillOptions(state.preferredCurrency, state.detectedCurrency);
+		await convertCurrentPage();
 	})();
 })();
