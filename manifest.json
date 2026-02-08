@@ -1,0 +1,28 @@
+{
+	"name": "Click2Cash",
+	"description": "Append local currency conversions to visible prices on demand.",
+	"version": "1.0.0",
+	"manifest_version": 3,
+	"action": {
+		"default_title": "Click2Cash",
+		"default_popup": "popup.html",
+		"default_icon": {
+			"128": "icons/icon128.png"
+		}
+	},
+	"icons": {
+		"128": "icons/icon128.png"
+	},
+	"background": {
+		"service_worker": "background.js"
+	},
+	"permissions": [
+		"activeTab",
+		"scripting",
+		"storage"
+	],
+	"host_permissions": [
+		"https://ipapi.co/*",
+		"https://open.er-api.com/*"
+	]
+}

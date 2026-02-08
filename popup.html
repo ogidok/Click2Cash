@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Click2Cash</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="app">
+			<h1>Click2Cash</h1>
+			<p class="muted" id="detected">Detected: ...</p>
+
+			<label class="field">
+				<span>Target currency</span>
+				<select id="currencySelect"></select>
+			</label>
+
+			<button id="convertBtn">Convert current page</button>
+			<p class="status" id="status"></p>
+		</div>
+		<script src="popup.js"></script>
+	</body>
+</html>
