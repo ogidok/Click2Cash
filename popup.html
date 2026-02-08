@@ -8,16 +8,27 @@
 	</head>
 	<body>
 		<div class="app">
-			<h1>Click2Cash</h1>
-			<p class="muted" id="detected">Detected: ...</p>
+			<div class="shell">
+				<header class="header">
+					<div class="brand">
+						<div class="icon-wrap">
+							<img src="icons/icon128.png" alt="Click2Cash" class="icon" />
+						</div>
+						<div class="title-block">
+							<h1>Click2Cash</h1>
+							<p class="tagline">Live currency overlay</p>
+						</div>
+					</div>
+					<div class="pill" id="detected">Detected: ...</div>
+				</header>
 
-			<label class="field">
-				<span>Target currency</span>
-				<select id="currencySelect"></select>
-			</label>
-
-			<button id="convertBtn">Convert current page</button>
-			<p class="status" id="status"></p>
+				<section class="panel">
+					<label class="field" for="currencySelect">Target currency</label>
+					<select id="currencySelect"></select>
+					<button id="convertBtn" class="primary">Convert current page</button>
+					<p class="status" id="status"></p>
+				</section>
+			</div>
 		</div>
 		<script src="popup.js"></script>
 	</body>

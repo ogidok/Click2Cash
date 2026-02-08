@@ -60,6 +60,28 @@
     });
   }
 
+  function getLocaleHints() {
+    const uiLanguage = api.i18n && api.i18n.getUILanguage
+      ? api.i18n.getUILanguage()
+      : "";
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    return { uiLanguage, timeZone };
+  }
+
+  function guessCurrencyFromLocale() {
+    const { uiLanguage, timeZone } = getLocaleHints();
+    if (uiLanguage.toLowerCase().startsWith("ja") || timeZone === "Asia/Tokyo") {
+      return "JPY";
+    }
+    if (uiLanguage.toLowerCase().startsWith("en-gb") || timeZone === "Europe/London") {
+      return "GBP";
+    }
+    if (uiLanguage.toLowerCase().startsWith("de") || uiLanguage.toLowerCase().startsWith("fr")) {
+      return "EUR";
+    }
+    return null;
+  }
+
   async function detectCurrency() {
     const stored = await getStorage(["detectedCurrency"]);
     if (stored.detectedCurrency) {
@@ -72,11 +94,17 @@
         throw new Error("geo-failed");
       }
       const data = await response.json();
-      const currency = data && data.currency ? String(data.currency).toUpperCase() : "USD";
+      let currency = data && data.currency ? String(data.currency).toUpperCase() : "USD";
+      if (currency === "USD") {
+        const fallback = guessCurrencyFromLocale();
+        if (fallback) {
+          currency = fallback;
+        }
+      }
       await setStorage({ detectedCurrency: currency });
       return currency;
     } catch (error) {
-      return "USD";
+      return guessCurrencyFromLocale() || "USD";
     }
   }
 

@@ -1,12 +1,22 @@
 (() => {
   const currencyFormats = new Map();
 
+  function normalizeAmountText(text) {
+    let value = String(text);
+    value = value.replace(/[\s\u00A0\u202F]/g, "");
+    value = value.replace(/[０-９]/g, (char) =>
+      String.fromCharCode(char.charCodeAt(0) - 0xff10 + 0x30)
+    );
+    value = value.replace(/[，、]/g, ",").replace(/[．。]/g, ".");
+    return value;
+  }
+
   function parseAmount(text) {
     if (!text) {
       return null;
     }
 
-    const raw = String(text).trim();
+    const raw = normalizeAmountText(text).trim();
     if (!raw) {
       return null;
     }

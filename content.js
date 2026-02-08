@@ -12,8 +12,8 @@
 		"円": "JPY"
 	};
 
-	const pricePattern = /(?:[A-Z]{2,3}\s?)?([€$£¥￥円])\s?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)|(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?|\d+(?:[.,]\d{2})?)\s?(?:[A-Z]{2,3}\s?)?([€$£¥￥円])/g;
-	const quickPattern = /[€$£¥￥円]\s*\d|\d\s*[€$£¥￥円]/;
+	const pricePattern = /(?:[A-Z]{2,3}\s?)?([€$£¥￥円])\s?([0-9\uFF10-\uFF19]{1,3}(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{3})*(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{2})?|[0-9\uFF10-\uFF19]+(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{2})?)|([0-9\uFF10-\uFF19]{1,3}(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{3})*(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{2})?|[0-9\uFF10-\uFF19]+(?:[.,\uFF0C\uFF0E\u3001\u3002][0-9\uFF10-\uFF19]{2})?)\s?(?:[A-Z]{2,3}\s?)?([€$£¥￥円])/g;
+	const quickPattern = /[€$£¥￥円]\s*[0-9\uFF10-\uFF19]|[0-9\uFF10-\uFF19]\s*[€$£¥￥円]/;
 
 	function buildReplacement(text, targetCurrency, rates) {
 		pricePattern.lastIndex = 0;
@@ -129,12 +129,12 @@
 		if (element.querySelector("[data-c2c-added]")) {
 			return;
 		}
-		if (element.children.length > 6) {
+		if (element.children.length > 12) {
 			return;
 		}
 
 		const text = element.textContent;
-		if (!text || text.length > 80) {
+		if (!text || text.length > 160) {
 			return;
 		}
 		if (!quickPattern.test(text)) {
