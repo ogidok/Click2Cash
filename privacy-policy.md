@@ -25,7 +25,7 @@ Si se realizan cambios en la política de privacidad, se actualizará este docum
 
 ## Contacto
 
-Para cualquier consulta sobre privacidad, puedes ponerte en contacto mediante [correo electrónico] o a través del repositorio en GitHub.
+Para cualquier consulta sobre privacidad, puedes ponerte en contacto a través del repositorio en GitHub.
 
 ---
 
